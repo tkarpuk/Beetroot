@@ -9,7 +9,6 @@ namespace Beetroot.DAL.Configurations
         public void Configure(EntityTypeBuilder<Address> builder)
         {
             builder.HasKey(a => a.Id);
-            builder.HasIndex(a => a.IpAddress).IsUnique();
             builder.HasMany(a => a.Messages).WithOne(m => m.IpAddress);
         }
     }
