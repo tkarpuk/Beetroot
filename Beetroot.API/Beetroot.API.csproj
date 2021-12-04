@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Beetroot.BLL\Beetroot.BLL.csproj" />
     <ProjectReference Include="..\Beetroot.DAL\Beetroot.DAL.csproj" />
   </ItemGroup>
 
