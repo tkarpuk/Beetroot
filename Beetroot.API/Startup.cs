@@ -6,6 +6,7 @@ using Beetroot.DAL;
 using Microsoft.Extensions.Configuration;
 using Beetroot.BLL.Interfaces;
 using Beetroot.BLL.Services;
+using Beetroot.API.Services;
 
 namespace Beetroot.API
 {
@@ -21,6 +22,7 @@ namespace Beetroot.API
         {
             services.AddControllers();
 
+            services.AddHostedService<UdpHostedService>();
             services.AddTransient<IMessageService, MessageService>();
             services.AddDbContextExt(_configuration.GetConnectionString("DefaultConnection"));
         }
