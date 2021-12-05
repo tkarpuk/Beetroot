@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Beetroot.BLL.Interfaces;
 using Beetroot.BLL.Services;
 using Beetroot.API.Services;
+using Beetroot.API.Extensions;
 
 namespace Beetroot.API
 {
@@ -22,6 +23,8 @@ namespace Beetroot.API
         {
             services.AddControllers();
 
+            services.AddSwaggerServiceExt();
+
             services.AddTransient<IMessageService, MessageService>();
             services.AddDbContextExt(_configuration.GetConnectionString("DefaultConnection"));
             services.AddHostedService<UdpHostedService>();
@@ -33,8 +36,9 @@ namespace Beetroot.API
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            
             app.UseRouting();
+            app.UseSwaggerMiddlewareExt();
 
             app.UseEndpoints(endpoints =>
             {
