@@ -38,7 +38,7 @@ namespace Beetroot.API.Services
 
         private bool IsNotProperlyMessage(string message)
         {
-            return (string.IsNullOrEmpty(message) || !message.Contains(_secretKey));
+            return !((message.Length > _secretKey.Length) && message.Contains(_secretKey));
         }
 
         private MessageDto CreateMessageDto(string text, IPAddress address)
