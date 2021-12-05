@@ -8,6 +8,7 @@ using Beetroot.BLL.Interfaces;
 using Beetroot.BLL.Services;
 using Beetroot.API.Services;
 using Beetroot.API.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Beetroot.API
 {
@@ -31,12 +32,13 @@ namespace Beetroot.API
             services.AddHostedService<UdpHostedService>();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILogger<Startup> logger)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
+            app.UseExceptionHandlerExt(logger);
             app.UseCorsMiddlewareExt();
             app.UseRouting();
             app.UseSwaggerMiddlewareExt();
