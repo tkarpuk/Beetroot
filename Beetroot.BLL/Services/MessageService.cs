@@ -4,7 +4,6 @@ using Beetroot.DAL.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Beetroot.DAL.Entities;
@@ -25,7 +24,7 @@ namespace Beetroot.BLL.Services
             if (queryParametersDto.IpAddress == null)
                 return a => true;
 
-            return a => (a.IpAddress == queryParametersDto.IpAddress); 
+            return a => (a.IpAddress.ToString() == queryParametersDto.IpAddress); 
         }
 
         private Func<Message, bool> GetWhereMessage(MessageQueryParametersDto queryParametersDto)
@@ -42,7 +41,7 @@ namespace Beetroot.BLL.Services
             return m => true;
         }
 
-        public async Task<List<MessageDto>> GetMessages(MessageQueryParametersDto queryParametersDto, CancellationToken cancellationToken)
+        public List<MessageViewDto> GetMessages(MessageQueryParametersDto queryParametersDto)
         {
             int _limit = queryParametersDto.PageSize;
             int _offset = queryParametersDto.PageSize * (queryParametersDto.PageN - 1);
@@ -50,22 +49,25 @@ namespace Beetroot.BLL.Services
             Func<Address, bool> WhereAddress = GetWhereAddress(queryParametersDto);
             Func<Message, bool> WhereMessage = GetWhereMessage(queryParametersDto);
 
-            var listResult = _dbContext.Addresses.Where(WhereAddress)
-                .Join(_dbContext.Messages.Where(WhereMessage),
+            var listResultAddress = _dbContext.Addresses.Where(WhereAddress).ToList();
+            var listResultMessages = _dbContext.Messages.Where(WhereMessage).ToList();
+            
+            var listResult = listResultAddress
+                .Join(listResultMessages,
                 a => a.Id,
-                m => m.AddressId,
-                (a, m) =>
-                 new MessageDto()
-                 {
-                    IpAddress = a.IpAddress,
-                    DateMessage = m.DateMessage,
-                    TextMessage = m.TextMessage
-                 }
+                           m => m.AddressId,
+                           (a, m) =>
+                            new MessageViewDto()
+                            {
+                                IpAddress = a.IpAddress.ToString(),
+                                DateMessage = m.DateMessage,
+                                TextMessage = m.TextMessage
+                            }
                 )
                 .Take(_limit)
                 .Skip(_offset);
-
-            return await listResult.AsQueryable().ToListAsync(cancellationToken);
+            
+            return listResult.ToList();
         }
 
         private async Task<Address> GetAddress(MessageDto messageDto, CancellationToken cancellationToken)

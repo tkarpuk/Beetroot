@@ -1,11 +1,8 @@
 ﻿using Beetroot.BLL.Dto;
 using Beetroot.BLL.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Beetroot.API.Controllers
@@ -20,10 +17,35 @@ namespace Beetroot.API.Controllers
             _messageService = messageService;
         }
 
-        [HttpGet]
-        public async Task<ActionResult<List<MessageDto>>> Get([FromQuery] MessageQueryParametersDto messageQueryParametersDto)
+        private MessageQueryParametersDto CreateParametersDto(
+            string ipAddress,
+             DateTime dateStart,
+             DateTime dateEnd,
+             int pageN,
+             int pageSize)
         {
-            var list = await _messageService.GetMessages(messageQueryParametersDto, CancellationToken.None);
+            MessageQueryParametersDto ParametersDto = new MessageQueryParametersDto()
+            {
+                IpAddress = (string.IsNullOrEmpty(ipAddress)) ? null : ipAddress,
+
+                DateStart = (dateStart == DateTime.MinValue) ? null : dateStart.ToUniversalTime(),
+                DateEnd = (dateEnd == DateTime.MinValue) ? null : dateEnd.ToUniversalTime(),
+                PageN = (pageN == 0) ? 1 : pageN,
+                PageSize = (pageSize == 0) ? 10 : pageSize
+            };
+
+            return ParametersDto;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<List<MessageViewDto>>> Get(string ipAddress, 
+            DateTime dateStart, DateTime dateEnd,
+            int pageN, int pageSize)
+        {
+            var messageQueryParametersDto = CreateParametersDto(ipAddress,
+                dateStart, dateEnd,  pageN, pageSize);
+
+            var list = await Task.Run(() => _messageService.GetMessages(messageQueryParametersDto));
             return Ok(list);
         }
     }

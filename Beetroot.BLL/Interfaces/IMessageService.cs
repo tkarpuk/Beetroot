@@ -9,6 +9,6 @@ namespace Beetroot.BLL.Interfaces
     public interface IMessageService
     {
         Task<Guid> SaveMessage(MessageDto messageDto,CancellationToken cancellationToken);
-        Task<List<MessageDto>> GetMessages(MessageQueryParametersDto queryParametersDto, CancellationToken cancellationToken);
+        List<MessageViewDto> GetMessages(MessageQueryParametersDto queryParametersDto);
     }
 }
