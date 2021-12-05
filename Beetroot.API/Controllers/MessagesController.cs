@@ -1,6 +1,7 @@
 ﻿using Beetroot.BLL.Dto;
 using Beetroot.BLL.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,9 +13,11 @@ namespace Beetroot.API.Controllers
     public class MessagesController : ControllerBase
     {
         private readonly IMessageService _messageService;
-        public MessagesController(IMessageService messageService)
+        private readonly ILogger<MessagesController> _logger;
+        public MessagesController(IMessageService messageService, ILogger<MessagesController> logger)
         {
             _messageService = messageService;
+            _logger = logger;
         }
 
         private MessageQueryParametersDto CreateParametersDto(
@@ -42,6 +45,7 @@ namespace Beetroot.API.Controllers
             DateTime dateStart, DateTime dateEnd,
             int pageN, int pageSize)
         {
+            _logger.LogDebug($"Request with parameterstring: {Request.QueryString}");
             var messageQueryParametersDto = CreateParametersDto(ipAddress,
                 dateStart, dateEnd,  pageN, pageSize);
 
