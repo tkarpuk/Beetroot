@@ -78,9 +78,10 @@ namespace Beetroot.BLL.Services
                     Id = Guid.NewGuid(),
                     IpAddress = messageDto.IpAddress
                 };
+
+                _dbContext.Addresses.Add(address);
+                await _dbContext.SaveChangesAsync(cancellationToken);
             }
-            _dbContext.Addresses.Add(address);
-            await _dbContext.SaveChangesAsync(cancellationToken);
 
             return address;
         }

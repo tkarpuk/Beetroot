@@ -22,9 +22,9 @@ namespace Beetroot.API
         {
             services.AddControllers();
 
-            services.AddHostedService<UdpHostedService>();
             services.AddTransient<IMessageService, MessageService>();
             services.AddDbContextExt(_configuration.GetConnectionString("DefaultConnection"));
+            services.AddHostedService<UdpHostedService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

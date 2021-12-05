@@ -12,7 +12,7 @@ namespace Beetroot.DAL
                 options.UseNpgsql(connectionString, b => b.MigrationsAssembly("Beetroot.API"))
                 );
 
-            services.AddSingleton<IAppDbContext>(provider =>
+            services.AddScoped<IAppDbContext>(provider =>
                 provider.GetService<AppDbContext>());
         }
     
