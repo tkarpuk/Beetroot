@@ -24,6 +24,7 @@ namespace Beetroot.API
             services.AddControllers();
 
             services.AddSwaggerServiceExt();
+            services.AddCorsServiceExt();
 
             services.AddTransient<IMessageService, MessageService>();
             services.AddDbContextExt(_configuration.GetConnectionString("DefaultConnection"));
@@ -36,7 +37,7 @@ namespace Beetroot.API
             {
                 app.UseDeveloperExceptionPage();
             }
-            
+            app.UseCorsMiddlewareExt();
             app.UseRouting();
             app.UseSwaggerMiddlewareExt();
 
