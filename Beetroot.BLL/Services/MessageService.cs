@@ -88,7 +88,7 @@ namespace Beetroot.BLL.Services
             return address;
         }
 
-        public async Task<Guid> SaveMessage(MessageDto messageDto, CancellationToken cancellationToken)
+        public async Task<Guid> SaveMessageAsync(MessageDto messageDto, CancellationToken cancellationToken)
         {
             Address address = await GetAddress(messageDto, cancellationToken);
 

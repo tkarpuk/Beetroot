@@ -15,12 +15,10 @@ namespace Beetroot.BLL.Services
 {
     public class UdpReceiveService : IUdpReceiveService
     {
-        private int _portUdp;
-        private string _secretKey;
+        private readonly int _portUdp;
+        private readonly string _secretKey;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ILogger<UdpReceiveService> _logger;
-
-        public int PortUdp => _portUdp;
 
         public UdpReceiveService(IServiceScopeFactory serviceScopeFactory, IOptions<UdpConfiguration> _udpConfiguration, ILogger<UdpReceiveService> logger)
         {
@@ -29,7 +27,7 @@ namespace Beetroot.BLL.Services
             _secretKey = _udpConfiguration.Value.SecretKey;
             _portUdp = _udpConfiguration.Value.PortUdp;
 
-            _logger.LogInformation($"Started service for UDP. Port: {_portUdp}");
+            _logger.LogInformation($"Started UdpReceiveService. Port: {_portUdp}");
         }
 
         private bool IsNotProperlyMessage(string message)
@@ -57,7 +55,7 @@ namespace Beetroot.BLL.Services
             using (var scope = _serviceScopeFactory.CreateScope())
             {
                 IMessageService messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
-                Guid messageId = await messageService.SaveMessage(messageDto, cancellationToken);
+                Guid messageId = await messageService.SaveMessageAsync(messageDto, cancellationToken);
 
                 _logger.LogDebug($"ID saved message in DB: {messageId}");
             }
@@ -65,36 +63,36 @@ namespace Beetroot.BLL.Services
 
         public async Task ReceiveMessageAsync(CancellationToken stoppingToken)
         {
-            UdpClient receiver = new UdpClient(_portUdp);
-            try
-            {
-                while (!stoppingToken.IsCancellationRequested)
+            using (var receiver = new UdpClient(_portUdp))
+                try
                 {
-                    var udpReceiveResult = await receiver.ReceiveAsync();
-                    _logger.LogDebug($"Get message from IP: {udpReceiveResult.RemoteEndPoint.Address}");
-
-                    string messageText = Encoding.Unicode.GetString(udpReceiveResult.Buffer);
-                    if (IsNotProperlyMessage(messageText))
+                    while (!stoppingToken.IsCancellationRequested)
                     {
-                        _logger.LogError($"Message empty or doesn't contain Secret Key");
-                        continue;
+                        var udpReceiveResult = await receiver.ReceiveAsync();
+                        _logger.LogDebug($"Get message from IP: {udpReceiveResult.RemoteEndPoint.Address}");
+
+                        string messageText = Encoding.Unicode.GetString(udpReceiveResult.Buffer);
+                        if (IsNotProperlyMessage(messageText))
+                        {
+                            _logger.LogError($"Message empty or doesn't contain Secret Key");
+                            continue;
+                        }
+
+                        var messageDto = CreateMessageDto(
+                            ClearMessageText(messageText),
+                            udpReceiveResult.RemoteEndPoint.Address);
+
+                        await SaveMessage(messageDto, stoppingToken);
                     }
-
-                    var messageDto = CreateMessageDto(
-                        ClearMessageText(messageText),
-                        udpReceiveResult.RemoteEndPoint.Address);
-
-                    await SaveMessage(messageDto, stoppingToken);
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Error in ReceiveMessage: {ex.Message}");
-            }
-            finally
-            {
-                receiver.Close();
-            }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error in ReceiveMessage: {ex.Message}");
+                }
+                finally
+                {
+                    receiver.Close();
+                }
         }
     }
 }

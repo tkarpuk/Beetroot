@@ -23,8 +23,6 @@ namespace Beetroot.API.Services
         {
             _logger = logger;
             _receiveService = receiveService;
-
-            _logger.LogInformation($"Started service for UDP. Port: {_receiveService.PortUdp}");
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
