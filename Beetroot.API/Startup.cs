@@ -9,6 +9,7 @@ using Beetroot.BLL.Services;
 using Beetroot.API.Services;
 using Beetroot.API.Extensions;
 using Microsoft.Extensions.Logging;
+using Beetroot.BLL.Configurations;
 
 namespace Beetroot.API
 {
@@ -24,11 +25,14 @@ namespace Beetroot.API
         {
             services.AddControllers();
 
+            services.Configure<UdpConfiguration>(_configuration.GetSection("UdpConfiguration"));
+
             services.AddSwaggerServiceExt();
             services.AddCorsServiceExt();
 
             services.AddTransient<IMessageService, MessageService>();
             services.AddDbContextExt(_configuration.GetConnectionString("DefaultConnection"));
+            services.AddSingleton<IUdpReceiveService, UdpReceiveService>();
             services.AddHostedService<UdpHostedService>();
         }
 

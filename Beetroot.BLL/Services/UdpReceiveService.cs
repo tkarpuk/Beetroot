@@ -1,10 +1,9 @@
-﻿using Beetroot.BLL.Dto;
+﻿using Beetroot.BLL.Configurations;
+using Beetroot.BLL.Dto;
 using Beetroot.BLL.Interfaces;
-using Beetroot.BLL.Services;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -12,46 +11,25 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Beetroot.API.Services
+namespace Beetroot.BLL.Services
 {
-    public class UdpHostedService : BackgroundService
+    public class UdpReceiveService : IUdpReceiveService
     {
-        private readonly ILogger<UdpHostedService> _logger;
-        private readonly IUdpReceiveService _receiveService;
-
-        public UdpHostedService(IUdpReceiveService receiveService, ILogger<UdpHostedService> logger)
-        {
-            _logger = logger;
-            _receiveService = receiveService;
-
-            _logger.LogInformation($"Started service for UDP. Port: {_receiveService.PortUdp}");
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            await _receiveService.ReceiveMessageAsync(stoppingToken);
-        }
-
-        /*
         private int _portUdp;
         private string _secretKey;
         private readonly IServiceScopeFactory _serviceScopeFactory;
-        private readonly ILogger<UdpHostedService> _logger;
+        private readonly ILogger<UdpReceiveService> _logger;
 
-        public UdpHostedService(IServiceScopeFactory serviceScopeFactory, IConfiguration configuration, ILogger<UdpHostedService> logger)
+        public int PortUdp => _portUdp;
+
+        public UdpReceiveService(IServiceScopeFactory serviceScopeFactory, IOptions<UdpConfiguration> _udpConfiguration, ILogger<UdpReceiveService> logger)
         {
             _serviceScopeFactory = serviceScopeFactory;
             _logger = logger;
-            _secretKey = configuration["UdpConfiguration:SecretKey"];
-            if (!int.TryParse(configuration["UdpConfiguration:Port"], out _portUdp))
-                _portUdp = 8001;
+            _secretKey = _udpConfiguration.Value.SecretKey;
+            _portUdp = _udpConfiguration.Value.PortUdp;
 
             _logger.LogInformation($"Started service for UDP. Port: {_portUdp}");
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            await ReceiveMessage(stoppingToken);
         }
 
         private bool IsNotProperlyMessage(string message)
@@ -85,9 +63,9 @@ namespace Beetroot.API.Services
             }
         }
 
-        private async Task ReceiveMessage(CancellationToken stoppingToken)
+        public async Task ReceiveMessageAsync(CancellationToken stoppingToken)
         {
-            UdpClient receiver = new UdpClient(_portUdp); 
+            UdpClient receiver = new UdpClient(_portUdp);
             try
             {
                 while (!stoppingToken.IsCancellationRequested)
@@ -100,10 +78,10 @@ namespace Beetroot.API.Services
                     {
                         _logger.LogError($"Message empty or doesn't contain Secret Key");
                         continue;
-                    }                      
+                    }
 
                     var messageDto = CreateMessageDto(
-                        ClearMessageText(messageText), 
+                        ClearMessageText(messageText),
                         udpReceiveResult.RemoteEndPoint.Address);
 
                     await SaveMessage(messageDto, stoppingToken);
@@ -118,6 +96,5 @@ namespace Beetroot.API.Services
                 receiver.Close();
             }
         }
-        */
     }
 }
