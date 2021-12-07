@@ -20,33 +20,14 @@ namespace Beetroot.API.Controllers
             _logger = logger;
         }
 
-        private MessageQueryParametersDto CreateParametersDto(
-            string ipAddress,
-             DateTime dateStart,
-             DateTime dateEnd,
-             int pageN,
-             int pageSize)
-        {
-            MessageQueryParametersDto ParametersDto = new MessageQueryParametersDto()
-            {
-                IpAddress = (string.IsNullOrEmpty(ipAddress)) ? null : ipAddress,
-
-                DateStart = (dateStart == DateTime.MinValue) ? null : dateStart.ToUniversalTime(),
-                DateEnd = (dateEnd == DateTime.MinValue) ? null : dateEnd.ToUniversalTime(),
-                PageN = (pageN == 0) ? 1 : pageN,
-                PageSize = (pageSize == 0) ? 10 : pageSize
-            };
-
-            return ParametersDto;
-        }
-
         [HttpGet]
         public async Task<ActionResult<List<MessageViewDto>>> Get(string ipAddress, 
             DateTime dateStart, DateTime dateEnd,
             int pageN, int pageSize)
         {
             _logger.LogDebug($"Request with parameterstring: {Request.QueryString}");
-            var messageQueryParametersDto = CreateParametersDto(ipAddress,
+
+            var messageQueryParametersDto = new MessageQueryParametersDto(ipAddress,
                 dateStart, dateEnd,  pageN, pageSize);
 
             var list = await Task.Run(() => _messageService.GetMessages(messageQueryParametersDto));

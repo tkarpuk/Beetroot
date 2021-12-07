@@ -44,7 +44,7 @@ namespace Beetroot.BLL.Services
         public List<MessageViewDto> GetMessages(MessageQueryParametersDto queryParametersDto)
         {
             int _limit = queryParametersDto.PageSize;
-            int _offset = queryParametersDto.PageSize * (queryParametersDto.PageN - 1);
+            int _offset = queryParametersDto.PageSize * (queryParametersDto.pageNumber - 1);
 
             Func<Address, bool> WhereAddress = GetWhereAddress(queryParametersDto);
             Func<Message, bool> WhereMessage = GetWhereMessage(queryParametersDto);
