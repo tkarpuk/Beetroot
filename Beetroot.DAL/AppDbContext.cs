@@ -19,8 +19,8 @@ namespace Beetroot.DAL
 
 
             modelBuilder.Entity<Message>().HasKey(m => m.Id);
-            modelBuilder.Entity<Message>().Property(m => m.TextMessage).HasMaxLength(200);
-            modelBuilder.Entity<Message>().HasIndex(m => m.DateMessage);
+            modelBuilder.Entity<Message>().Property(m => m.Text).HasMaxLength(200);
+            modelBuilder.Entity<Message>().HasIndex(m => m.Date);
             modelBuilder.Entity<Message>().HasOne(m => m.IpAddress).WithMany(a => a.Messages)
                         .HasForeignKey(m => m.AddressId)
                         .OnDelete(DeleteBehavior.Cascade);

@@ -19,7 +19,7 @@ namespace Beetroot.BLL.Services
             _dbContext = dbContext; 
         }
 
-        private Func<Address, bool> GetWhereAddress(MessageQueryParametersDto queryParametersDto)
+        private Func<Address, bool> GetAddressCondition(MessageQueryParametersDto queryParametersDto)
         {
             if (queryParametersDto.IpAddress == null)
                 return a => true;
@@ -27,16 +27,16 @@ namespace Beetroot.BLL.Services
             return a => (a.IpAddress.ToString() == queryParametersDto.IpAddress); 
         }
 
-        private Func<Message, bool> GetWhereMessage(MessageQueryParametersDto queryParametersDto)
+        private Func<Message, bool> GetMessageCondition(MessageQueryParametersDto queryParametersDto)
         {
             if (queryParametersDto.DateStart != null && queryParametersDto.DateEnd != null)
-                return m => m.DateMessage >= queryParametersDto.DateStart && m.DateMessage <= queryParametersDto.DateEnd;
+                return m => m.Date >= queryParametersDto.DateStart && m.Date <= queryParametersDto.DateEnd;
 
             if (queryParametersDto.DateStart != null && queryParametersDto.DateEnd == null)
-                return m => m.DateMessage >= queryParametersDto.DateStart;
+                return m => m.Date >= queryParametersDto.DateStart;
 
             if (queryParametersDto.DateStart == null && queryParametersDto.DateEnd != null)
-                return m => m.DateMessage <= queryParametersDto.DateEnd;
+                return m => m.Date <= queryParametersDto.DateEnd;
 
             return m => true;
         }
@@ -44,13 +44,13 @@ namespace Beetroot.BLL.Services
         public List<MessageViewDto> GetMessages(MessageQueryParametersDto queryParametersDto)
         {
             int _limit = queryParametersDto.PageSize;
-            int _offset = queryParametersDto.PageSize * (queryParametersDto.pageNumber - 1);
+            int _offset = queryParametersDto.PageSize * (queryParametersDto.PageNumber - 1);
 
-            Func<Address, bool> WhereAddress = GetWhereAddress(queryParametersDto);
-            Func<Message, bool> WhereMessage = GetWhereMessage(queryParametersDto);
+            Func<Address, bool> AddressCondition = GetAddressCondition(queryParametersDto);
+            Func<Message, bool> MessageCondition = GetMessageCondition(queryParametersDto);
 
-            var listResultAddress = _dbContext.Addresses.Where(WhereAddress).ToList();
-            var listResultMessages = _dbContext.Messages.Where(WhereMessage).ToList();
+            var listResultAddress = _dbContext.Addresses.Where(AddressCondition).ToList();
+            var listResultMessages = _dbContext.Messages.Where(MessageCondition).ToList();
             
             var listResult = listResultAddress
                 .Join(listResultMessages,
@@ -60,8 +60,8 @@ namespace Beetroot.BLL.Services
                             new MessageViewDto()
                             {
                                 IpAddress = a.IpAddress.ToString(),
-                                DateMessage = m.DateMessage,
-                                TextMessage = m.TextMessage
+                                Date = m.Date,
+                                Text = m.Text
                             }
                 )
                 .Take(_limit)
@@ -95,8 +95,8 @@ namespace Beetroot.BLL.Services
             var message = new Message()
             {
                 Id = Guid.NewGuid(),
-                TextMessage = messageDto.TextMessage,
-                DateMessage = messageDto.DateMessage,
+                Text = messageDto.Text,
+                Date = messageDto.Date,
                 IpAddress = address
             };
            

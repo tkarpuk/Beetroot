@@ -24,10 +24,11 @@ namespace Beetroot.BLL.Services
         {
             _serviceScopeFactory = serviceScopeFactory;
             _logger = logger;
+
             _secretKey = _udpConfiguration.Value.SecretKey;
             _portUdp = _udpConfiguration.Value.PortUdp;
 
-            _logger.LogInformation($"Started UdpReceiveService. Port: {_portUdp}");
+            _logger.LogInformation($"Created UdpReceiveService. Port: {_portUdp}");
         }
 
         private bool IsNotProperlyMessage(string message)
@@ -35,13 +36,13 @@ namespace Beetroot.BLL.Services
             return !((message.Length > _secretKey.Length) && message.Contains(_secretKey));
         }
 
-        private MessageDto CreateMessageDto(string text, IPAddress address)
+        private MessageDto CreateMessageDto(string text, string address)
         {
             return new MessageDto()
             {
                 IpAddress = address,
-                TextMessage = text,
-                DateMessage = DateTime.Now
+                Text = text,
+                Date = DateTime.Now
             };
         }
 
@@ -50,7 +51,7 @@ namespace Beetroot.BLL.Services
             return message.Replace(_secretKey, "");
         }
 
-        private async Task SaveMessage(MessageDto messageDto, CancellationToken cancellationToken)
+        private async Task SaveMessageAsync(MessageDto messageDto, CancellationToken cancellationToken)
         {
             using (var scope = _serviceScopeFactory.CreateScope())
             {
@@ -74,15 +75,15 @@ namespace Beetroot.BLL.Services
                         string messageText = Encoding.Unicode.GetString(udpReceiveResult.Buffer);
                         if (IsNotProperlyMessage(messageText))
                         {
-                            _logger.LogError($"Message empty or doesn't contain Secret Key");
+                            _logger.LogError($"Message is empty or doesn't contain Secret Key");
                             continue;
                         }
 
                         var messageDto = CreateMessageDto(
                             ClearMessageText(messageText),
-                            udpReceiveResult.RemoteEndPoint.Address);
+                            udpReceiveResult.RemoteEndPoint.Address.ToString());
 
-                        await SaveMessage(messageDto, stoppingToken);
+                        await SaveMessageAsync(messageDto, stoppingToken);
                     }
                 }
                 catch (Exception ex)

@@ -7,8 +7,8 @@ namespace Beetroot.DAL.Entities
     public class Address
     {
         public Guid Id { get; set; }
-        public IPAddress IpAddress { get; set; }
+        public string IpAddress { get; set; }
 
-        public List<Message> Messages { get; set; }
+        public ICollection<Message> Messages { get; set; }
     }
 }
