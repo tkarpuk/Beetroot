@@ -9,7 +9,7 @@ namespace Beetroot.DAL
         public static void AddDbContextExt(this IServiceCollection services, string connectionString)
         {          
             services.AddDbContext<AppDbContext>(options =>
-                options.UseNpgsql(connectionString, b => b.MigrationsAssembly("Beetroot.API"))
+                options.UseNpgsql(connectionString, b => b.MigrationsAssembly("Beetroot.DAL"))
                 );
 
             services.AddScoped<IAppDbContext>(provider =>

@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Net;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Beetroot.API.Migrations
+namespace Beetroot.DAL.Migrations
 {
     public partial class Initial : Migration
     {
@@ -13,7 +12,7 @@ namespace Beetroot.API.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    IpAddress = table.Column<IPAddress>(type: "inet", nullable: true)
+                    IpAddress = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -25,8 +24,8 @@ namespace Beetroot.API.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    TextMessage = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    DateMessage = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    Text = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    Date = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
                     AddressId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
@@ -46,9 +45,9 @@ namespace Beetroot.API.Migrations
                 column: "AddressId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Messages_DateMessage",
+                name: "IX_Messages_Date",
                 table: "Messages",
-                column: "DateMessage");
+                column: "Date");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

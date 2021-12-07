@@ -16,6 +16,7 @@ namespace Beetroot.DAL
         {
             modelBuilder.Entity<Address>().HasKey(a => a.Id);
             modelBuilder.Entity<Address>().HasMany(a => a.Messages).WithOne(m => m.IpAddress);
+            modelBuilder.Entity<Address>().Property(a => a.IpAddress).IsRequired().HasMaxLength(16);
 
 
             modelBuilder.Entity<Message>().HasKey(m => m.Id);
