@@ -10,9 +10,7 @@ namespace Beetroot.BLL.Dto
         public int pageNumber { get; set; }
         public int PageSize { get; set; }
 
-        public MessageQueryParametersDto() { }
-
-        public MessageQueryParametersDto (
+        public MessageQueryParametersDto(
             string ipAddress,
             DateTime dateStart,
             DateTime dateEnd,

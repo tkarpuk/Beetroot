@@ -23,12 +23,12 @@ namespace Beetroot.API.Controllers
         [HttpGet]
         public async Task<ActionResult<List<MessageViewDto>>> Get(string ipAddress, 
             DateTime dateStart, DateTime dateEnd,
-            int pageN, int pageSize)
+            int pageNumber, int pageSize)
         {
             _logger.LogDebug($"Request with parameterstring: {Request.QueryString}");
 
             var messageQueryParametersDto = new MessageQueryParametersDto(ipAddress,
-                dateStart, dateEnd,  pageN, pageSize);
+                dateStart, dateEnd,  pageNumber, pageSize);
 
             var list = await Task.Run(() => _messageService.GetMessages(messageQueryParametersDto));
             return Ok(list);
