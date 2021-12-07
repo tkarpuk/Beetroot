@@ -1,5 +1,4 @@
-﻿using Beetroot.DAL.Configurations;
-using Beetroot.DAL.Entities;
+﻿using Beetroot.DAL.Entities;
 using Beetroot.DAL.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,8 +14,16 @@ namespace Beetroot.DAL
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfiguration(new AddressConfiguration());
-            modelBuilder.ApplyConfiguration(new MessageConfiguration());
+            modelBuilder.Entity<Address>().HasKey(a => a.Id);
+            modelBuilder.Entity<Address>().HasMany(a => a.Messages).WithOne(m => m.IpAddress);
+
+
+            modelBuilder.Entity<Message>().HasKey(m => m.Id);
+            modelBuilder.Entity<Message>().Property(m => m.TextMessage).HasMaxLength(200);
+            modelBuilder.Entity<Message>().HasIndex(m => m.DateMessage);
+            modelBuilder.Entity<Message>().HasOne(m => m.IpAddress).WithMany(a => a.Messages)
+                        .HasForeignKey(m => m.AddressId)
+                        .OnDelete(DeleteBehavior.Cascade);
 
             base.OnModelCreating(modelBuilder);
         }
