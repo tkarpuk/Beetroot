@@ -32,25 +32,25 @@ namespace UdpClientConsole
 
         private static void SendMessage()
         {
-            UdpClient sender = new UdpClient();
-            try
-            {
-                while (true)
+            using (UdpClient sender = new UdpClient())
+                try
                 {
-                    Console.Write("Введите сообщение для отправки: ");
-                    string message = Console.ReadLine(); // сообщение для отправки
-                    byte[] data = Encoding.Unicode.GetBytes(secretKey + message); // добавляем секретный ключ
-                    sender.Send(data, data.Length, remoteAddress, remotePort); // отправка
+                    while (true)
+                    {
+                        Console.Write("Введите сообщение для отправки: ");
+                        string message = Console.ReadLine(); // сообщение для отправки
+                        byte[] data = Encoding.Unicode.GetBytes(secretKey + message); // добавляем секретный ключ
+                        sender.Send(data, data.Length, remoteAddress, remotePort); // отправка
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            finally
-            {
-                sender.Close();
-            }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                finally
+                {
+                    sender.Close();
+                }
         }
     }
 }
