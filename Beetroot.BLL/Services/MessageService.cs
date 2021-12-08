@@ -70,7 +70,7 @@ namespace Beetroot.BLL.Services
             return listResult.ToList();
         }
 
-        private async Task<Address> GetAddress(MessageDto messageDto, CancellationToken cancellationToken)
+        private async Task<Address> GetAddressAsync(MessageDto messageDto, CancellationToken cancellationToken)
         {
             Address address = await _dbContext.Addresses.FirstOrDefaultAsync(a => a.IpAddress == messageDto.IpAddress);
             if (address == null)
@@ -90,7 +90,7 @@ namespace Beetroot.BLL.Services
 
         public async Task<Guid> SaveMessageAsync(MessageDto messageDto, CancellationToken cancellationToken)
         {
-            Address address = await GetAddress(messageDto, cancellationToken);
+            Address address = await GetAddressAsync(messageDto, cancellationToken);
 
             var message = new Message()
             {
