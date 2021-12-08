@@ -38,7 +38,7 @@ namespace Beetroot.BLL.Services
             {
                 IpAddress = address,
                 Text = text,
-                Date = DateTime.Now
+                Date = DateTime.UtcNow
             };
         }
 

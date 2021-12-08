@@ -41,7 +41,7 @@ namespace Beetroot.BLL.Services
             return m => true;
         }
 
-        public List<MessageViewDto> GetMessages(MessageQueryParametersDto queryParametersDto)
+        public Task<IEnumerable<MessageDto>> GetMessagesAsync(MessageQueryParametersDto queryParametersDto)
         {
             int _limit = queryParametersDto.PageSize;
             int _offset = queryParametersDto.PageSize * (queryParametersDto.PageNumber - 1);
@@ -52,16 +52,16 @@ namespace Beetroot.BLL.Services
             var listResult = _dbContext.Messages.Include(m => m.IpAddress)
                 .Where(AddressCondition)
                 .Where(MessageCondition)
-                .Select(m => new MessageViewDto()
+                .Select(m => new MessageDto()
                 {
-                    IpAddress = m.IpAddress.IpAddress.ToString(),
+                    IpAddress = m.IpAddress.IpAddress,
                     Date = m.Date,
                     Text = m.Text
                 })
                 .Take(_limit)
                 .Skip(_offset);
 
-            return listResult.ToList();
+            return Task.FromResult(listResult);
         }
 
         private async Task<Address> GetAddressAsync(MessageDto messageDto, CancellationToken cancellationToken)

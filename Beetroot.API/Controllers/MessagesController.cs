@@ -21,7 +21,7 @@ namespace Beetroot.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<MessageViewDto>>> Get(string ipAddress, 
+        public async Task<ActionResult<List<MessageDto>>> Get(string ipAddress, 
             DateTime dateStart, DateTime dateEnd,
             int pageNumber, int pageSize)
         {
@@ -30,7 +30,7 @@ namespace Beetroot.API.Controllers
             var messageQueryParametersDto = new MessageQueryParametersDto(ipAddress,
                 dateStart, dateEnd,  pageNumber, pageSize);
 
-            var list = await Task.Run(() => _messageService.GetMessages(messageQueryParametersDto));
+            var list = await _messageService.GetMessagesAsync(messageQueryParametersDto);
             return Ok(list);
         }
     }
