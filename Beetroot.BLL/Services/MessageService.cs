@@ -19,12 +19,12 @@ namespace Beetroot.BLL.Services
             _dbContext = dbContext; 
         }
 
-        private static Func<Address, bool> CreateAddressCondition(MessageQueryParametersDto queryParametersDto)
+        private static Func<Message, bool> CreateAddressCondition(MessageQueryParametersDto queryParametersDto)
         {
             if (queryParametersDto.IpAddress == null)
-                return a => true;
+                return m => true;
 
-            return a => (a.IpAddress.ToString() == queryParametersDto.IpAddress); 
+            return m => (m.IpAddress.IpAddress == queryParametersDto.IpAddress); 
         }
 
         private static Func<Message, bool> CreateMessageCondition(MessageQueryParametersDto queryParametersDto)
@@ -46,27 +46,21 @@ namespace Beetroot.BLL.Services
             int _limit = queryParametersDto.PageSize;
             int _offset = queryParametersDto.PageSize * (queryParametersDto.PageNumber - 1);
 
-            Func<Address, bool> AddressCondition = CreateAddressCondition(queryParametersDto);
+            Func<Message, bool> AddressCondition = CreateAddressCondition(queryParametersDto);
             Func<Message, bool> MessageCondition = CreateMessageCondition(queryParametersDto);
 
-            var listResultAddress = _dbContext.Addresses.Where(AddressCondition).ToList();
-            var listResultMessages = _dbContext.Messages.Where(MessageCondition).ToList();
-            
-            var listResult = listResultAddress
-                .Join(listResultMessages,
-                a => a.Id,
-                           m => m.AddressId,
-                           (a, m) =>
-                            new MessageViewDto()
-                            {
-                                IpAddress = a.IpAddress.ToString(),
-                                Date = m.Date,
-                                Text = m.Text
-                            }
-                )
+            var listResult = _dbContext.Messages.Include(m => m.IpAddress)
+                .Where(AddressCondition)
+                .Where(MessageCondition)
+                .Select(m => new MessageViewDto()
+                {
+                    IpAddress = m.IpAddress.IpAddress.ToString(),
+                    Date = m.Date,
+                    Text = m.Text
+                })
                 .Take(_limit)
                 .Skip(_offset);
-            
+
             return listResult.ToList();
         }
 
