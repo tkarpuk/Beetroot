@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -15,25 +14,22 @@ namespace Beetroot.BLL.Services
 {
     public class UdpReceiveService : IUdpReceiveService
     {
-        private readonly int _portUdp;
-        private readonly string _secretKey;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ILogger<UdpReceiveService> _logger;
+        private readonly UdpConfiguration _configuration;
 
-        public UdpReceiveService(IServiceScopeFactory serviceScopeFactory, IOptions<UdpConfiguration> _udpConfiguration, ILogger<UdpReceiveService> logger)
+        public UdpReceiveService(IServiceScopeFactory serviceScopeFactory, IOptions<UdpConfiguration> udpConfiguration, ILogger<UdpReceiveService> logger)
         {
             _serviceScopeFactory = serviceScopeFactory;
             _logger = logger;
+            _configuration = udpConfiguration.Value;
 
-            _secretKey = _udpConfiguration.Value.SecretKey;
-            _portUdp = _udpConfiguration.Value.PortUdp;
-
-            _logger.LogInformation($"Created UdpReceiveService. Port: {_portUdp}");
+            _logger.LogInformation($"Created UdpReceiveService. Port: {_configuration.PortUdp}");
         }
 
         private bool IsNotProperlyMessage(string message)
         {
-            return !((message.Length > _secretKey.Length) && message.Contains(_secretKey));
+            return !((message.Length > _configuration.SecretKey.Length) && message.Contains(_configuration.SecretKey));
         }
 
         private MessageDto CreateMessageDto(string text, string address)
@@ -48,7 +44,7 @@ namespace Beetroot.BLL.Services
 
         private string ClearMessageText(string message)
         {
-            return message.Replace(_secretKey, "");
+            return message.Replace(_configuration.SecretKey, "");
         }
 
         private async Task SaveMessageAsync(MessageDto messageDto, CancellationToken cancellationToken)
@@ -64,7 +60,7 @@ namespace Beetroot.BLL.Services
 
         public async Task ReceiveMessageAsync(CancellationToken stoppingToken)
         {
-            using (var receiver = new UdpClient(_portUdp))
+            using (var receiver = new UdpClient(_configuration.PortUdp))
                 try
                 {
                     while (!stoppingToken.IsCancellationRequested)
