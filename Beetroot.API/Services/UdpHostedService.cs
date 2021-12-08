@@ -10,7 +10,7 @@ namespace Beetroot.API.Services
     {
         private readonly IUdpReceiveService _receiveService;
 
-        public UdpHostedService(IUdpReceiveService receiveService, ILogger<UdpHostedService> logger)
+        public UdpHostedService(IUdpReceiveService receiveService)
         {
             _receiveService = receiveService;
         }

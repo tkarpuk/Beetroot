@@ -22,7 +22,7 @@ namespace Beetroot.API.Extensions
                         logger.LogError($"Something went wrong: {contextFeature.Error}");
                         await context.Response.WriteAsync(new 
                         {
-                            StatusCode = context.Response.StatusCode,
+                            context.Response.StatusCode,
                             Message = "Internal Server Error."
                         }.ToString());
                     }

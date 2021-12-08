@@ -32,7 +32,7 @@ namespace Beetroot.BLL.Services
             return !((message.Length > _configuration.SecretKey.Length) && message.Contains(_configuration.SecretKey));
         }
 
-        private MessageDto CreateMessageDto(string text, string address)
+        private static MessageDto CreateMessageDto(string text, string address)
         {
             return new MessageDto()
             {
@@ -49,47 +49,45 @@ namespace Beetroot.BLL.Services
 
         private async Task SaveMessageAsync(MessageDto messageDto, CancellationToken cancellationToken)
         {
-            using (var scope = _serviceScopeFactory.CreateScope())
-            {
-                IMessageService messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
-                Guid messageId = await messageService.SaveMessageAsync(messageDto, cancellationToken);
+            using var scope = _serviceScopeFactory.CreateScope();
+            IMessageService messageService = scope.ServiceProvider.GetRequiredService<IMessageService>();
+            Guid messageId = await messageService.SaveMessageAsync(messageDto, cancellationToken);
 
-                _logger.LogDebug($"ID saved message in DB: {messageId}");
-            }
+            _logger.LogDebug($"ID saved message in DB: {messageId}");
         }
 
         public async Task ReceiveMessageAsync(CancellationToken stoppingToken)
         {
-            using (var receiver = new UdpClient(_configuration.PortUdp))
-                try
+            using var receiver = new UdpClient(_configuration.PortUdp);
+            try
+            {
+                while (!stoppingToken.IsCancellationRequested)
                 {
-                    while (!stoppingToken.IsCancellationRequested)
+                    var udpReceiveResult = await receiver.ReceiveAsync();
+                    _logger.LogDebug($"Get message from IP: {udpReceiveResult.RemoteEndPoint.Address}");
+
+                    string messageText = Encoding.Unicode.GetString(udpReceiveResult.Buffer);
+                    if (IsNotProperlyMessage(messageText))
                     {
-                        var udpReceiveResult = await receiver.ReceiveAsync();
-                        _logger.LogDebug($"Get message from IP: {udpReceiveResult.RemoteEndPoint.Address}");
-
-                        string messageText = Encoding.Unicode.GetString(udpReceiveResult.Buffer);
-                        if (IsNotProperlyMessage(messageText))
-                        {
-                            _logger.LogError($"Message is empty or doesn't contain Secret Key");
-                            continue;
-                        }
-
-                        var messageDto = CreateMessageDto(
-                            ClearMessageText(messageText),
-                            udpReceiveResult.RemoteEndPoint.Address.ToString());
-
-                        await SaveMessageAsync(messageDto, stoppingToken);
+                        _logger.LogError($"Message is empty or doesn't contain Secret Key");
+                        continue;
                     }
+
+                    var messageDto = CreateMessageDto(
+                        ClearMessageText(messageText),
+                        udpReceiveResult.RemoteEndPoint.Address.ToString());
+
+                    await SaveMessageAsync(messageDto, stoppingToken);
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Error in ReceiveMessage: {ex.Message}");
-                }
-                finally
-                {
-                    receiver.Close();
-                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error in ReceiveMessage: {ex.Message}");
+            }
+            finally
+            {
+                receiver.Close();
+            }
         }
     }
 }

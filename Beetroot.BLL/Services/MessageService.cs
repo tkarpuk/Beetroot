@@ -19,7 +19,7 @@ namespace Beetroot.BLL.Services
             _dbContext = dbContext; 
         }
 
-        private Func<Address, bool> GetAddressCondition(MessageQueryParametersDto queryParametersDto)
+        private static Func<Address, bool> CreateAddressCondition(MessageQueryParametersDto queryParametersDto)
         {
             if (queryParametersDto.IpAddress == null)
                 return a => true;
@@ -27,7 +27,7 @@ namespace Beetroot.BLL.Services
             return a => (a.IpAddress.ToString() == queryParametersDto.IpAddress); 
         }
 
-        private Func<Message, bool> GetMessageCondition(MessageQueryParametersDto queryParametersDto)
+        private static Func<Message, bool> CreateMessageCondition(MessageQueryParametersDto queryParametersDto)
         {
             if (queryParametersDto.DateStart != null && queryParametersDto.DateEnd != null)
                 return m => m.Date >= queryParametersDto.DateStart && m.Date <= queryParametersDto.DateEnd;
@@ -46,8 +46,8 @@ namespace Beetroot.BLL.Services
             int _limit = queryParametersDto.PageSize;
             int _offset = queryParametersDto.PageSize * (queryParametersDto.PageNumber - 1);
 
-            Func<Address, bool> AddressCondition = GetAddressCondition(queryParametersDto);
-            Func<Message, bool> MessageCondition = GetMessageCondition(queryParametersDto);
+            Func<Address, bool> AddressCondition = CreateAddressCondition(queryParametersDto);
+            Func<Message, bool> MessageCondition = CreateMessageCondition(queryParametersDto);
 
             var listResultAddress = _dbContext.Addresses.Where(AddressCondition).ToList();
             var listResultMessages = _dbContext.Messages.Where(MessageCondition).ToList();
@@ -72,7 +72,7 @@ namespace Beetroot.BLL.Services
 
         private async Task<Address> GetAddressAsync(MessageDto messageDto, CancellationToken cancellationToken)
         {
-            Address address = await _dbContext.Addresses.FirstOrDefaultAsync(a => a.IpAddress == messageDto.IpAddress);
+            Address address = await _dbContext.Addresses.FirstOrDefaultAsync(a => a.IpAddress == messageDto.IpAddress, cancellationToken);
             if (address == null)
             {
                 address = new Address()
